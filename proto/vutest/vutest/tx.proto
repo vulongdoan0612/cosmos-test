@@ -1,0 +1,7 @@
+syntax = "proto3";
+package vutest.vutest;
+
+option go_package = "vutest/x/vutest/types";
+
+// Msg defines the Msg service.
+service Msg {}
