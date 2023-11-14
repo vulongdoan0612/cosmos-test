@@ -23,7 +23,19 @@ var (
 )
 
 const (
-// this line is used by starport scaffolding # simapp/module/const
+	opWeightMsgCreateBaseDenom = "op_weight_msg_base_denom"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgCreateBaseDenom int = 100
+
+	opWeightMsgUpdateBaseDenom = "op_weight_msg_base_denom"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgUpdateBaseDenom int = 100
+
+	opWeightMsgDeleteBaseDenom = "op_weight_msg_base_denom"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgDeleteBaseDenom int = 100
+
+	// this line is used by starport scaffolding # simapp/module/const
 )
 
 // GenerateGenesisState creates a randomized GenState of the module.
@@ -51,6 +63,39 @@ func (AppModule) ProposalContents(_ module.SimulationState) []simtypes.WeightedP
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	operations := make([]simtypes.WeightedOperation, 0)
 
+	var weightMsgCreateBaseDenom int
+	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgCreateBaseDenom, &weightMsgCreateBaseDenom, nil,
+		func(_ *rand.Rand) {
+			weightMsgCreateBaseDenom = defaultWeightMsgCreateBaseDenom
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgCreateBaseDenom,
+		vutestsimulation.SimulateMsgCreateBaseDenom(am.accountKeeper, am.bankKeeper, am.keeper),
+	))
+
+	var weightMsgUpdateBaseDenom int
+	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgUpdateBaseDenom, &weightMsgUpdateBaseDenom, nil,
+		func(_ *rand.Rand) {
+			weightMsgUpdateBaseDenom = defaultWeightMsgUpdateBaseDenom
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgUpdateBaseDenom,
+		vutestsimulation.SimulateMsgUpdateBaseDenom(am.accountKeeper, am.bankKeeper, am.keeper),
+	))
+
+	var weightMsgDeleteBaseDenom int
+	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgDeleteBaseDenom, &weightMsgDeleteBaseDenom, nil,
+		func(_ *rand.Rand) {
+			weightMsgDeleteBaseDenom = defaultWeightMsgDeleteBaseDenom
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgDeleteBaseDenom,
+		vutestsimulation.SimulateMsgDeleteBaseDenom(am.accountKeeper, am.bankKeeper, am.keeper),
+	))
+
 	// this line is used by starport scaffolding # simapp/module/operation
 
 	return operations
@@ -59,6 +104,30 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 // ProposalMsgs returns msgs used for governance proposals for simulations.
 func (am AppModule) ProposalMsgs(simState module.SimulationState) []simtypes.WeightedProposalMsg {
 	return []simtypes.WeightedProposalMsg{
+		simulation.NewWeightedProposalMsg(
+			opWeightMsgCreateBaseDenom,
+			defaultWeightMsgCreateBaseDenom,
+			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
+				vutestsimulation.SimulateMsgCreateBaseDenom(am.accountKeeper, am.bankKeeper, am.keeper)
+				return nil
+			},
+		),
+		simulation.NewWeightedProposalMsg(
+			opWeightMsgUpdateBaseDenom,
+			defaultWeightMsgUpdateBaseDenom,
+			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
+				vutestsimulation.SimulateMsgUpdateBaseDenom(am.accountKeeper, am.bankKeeper, am.keeper)
+				return nil
+			},
+		),
+		simulation.NewWeightedProposalMsg(
+			opWeightMsgDeleteBaseDenom,
+			defaultWeightMsgDeleteBaseDenom,
+			func(r *rand.Rand, ctx sdk.Context, accs []simtypes.Account) sdk.Msg {
+				vutestsimulation.SimulateMsgDeleteBaseDenom(am.accountKeeper, am.bankKeeper, am.keeper)
+				return nil
+			},
+		),
 		// this line is used by starport scaffolding # simapp/module/OpMsg
 	}
 }

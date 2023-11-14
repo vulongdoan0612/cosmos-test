@@ -1,26 +1,43 @@
 syntax = "proto3";
+
 package vutest.vutest;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "vutest/vutest/params.proto";
+import "vutest/vutest/base_denom.proto";
 
 option go_package = "vutest/x/vutest/types";
 
 // Query defines the gRPC querier service.
 service Query {
+  
   // Parameters queries the parameters of the module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+  rpc Params (QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/vutest/vutest/params";
+  
+  }
+  
+  // Queries a BaseDenom by index.
+  rpc BaseDenom (QueryGetBaseDenomRequest) returns (QueryGetBaseDenomResponse) {
+    option (google.api.http).get = "/vutest/vutest/base_denom";
+  
   }
 }
-
 // QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
+  
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
 }
+
+message QueryGetBaseDenomRequest {}
+
+message QueryGetBaseDenomResponse {
+  BaseDenom BaseDenom = 1 [(gogoproto.nullable) = false];
+}
+

@@ -46437,6 +46437,43 @@ paths:
                         }
       tags:
         - Query
+  /vutest/vutest/base_denom:
+    get:
+      summary: Queries a BaseDenom by index.
+      operationId: VutestVutestBaseDenom
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              BaseDenom:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  creator:
+                    type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      tags:
+        - Query
   /vutest/vutest/params:
     get:
       summary: Parameters queries the parameters of the module.
@@ -75212,9 +75249,32 @@ definitions:
     description: |-
       Version defines the versioning scheme used to negotiate the IBC verison in
       the connection handshake.
+  vutest.vutest.BaseDenom:
+    type: object
+    properties:
+      denom:
+        type: string
+      creator:
+        type: string
+  vutest.vutest.MsgCreateBaseDenomResponse:
+    type: object
+  vutest.vutest.MsgDeleteBaseDenomResponse:
+    type: object
+  vutest.vutest.MsgUpdateBaseDenomResponse:
+    type: object
   vutest.vutest.Params:
     type: object
     description: Params defines the parameters for the module.
+  vutest.vutest.QueryGetBaseDenomResponse:
+    type: object
+    properties:
+      BaseDenom:
+        type: object
+        properties:
+          denom:
+            type: string
+          creator:
+            type: string
   vutest.vutest.QueryParamsResponse:
     type: object
     properties:

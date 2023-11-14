@@ -1,0 +1,9 @@
+syntax = "proto3";
+package vutest.vutest;
+
+option go_package = "vutest/x/vutest/types";
+
+message BaseDenom {
+  string denom = 1; 
+  string creator = 2;
+}

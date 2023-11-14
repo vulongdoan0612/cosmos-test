@@ -1,7 +1,34 @@
 syntax = "proto3";
+
 package vutest.vutest;
+
+import "vutest/vutest/base_denom.proto";
 
 option go_package = "vutest/x/vutest/types";
 
 // Msg defines the Msg service.
-service Msg {}
+service Msg {
+  rpc CreateBaseDenom (MsgCreateBaseDenom) returns (MsgCreateBaseDenomResponse);
+  rpc UpdateBaseDenom (MsgUpdateBaseDenom) returns (MsgUpdateBaseDenomResponse);
+  rpc DeleteBaseDenom (MsgDeleteBaseDenom) returns (MsgDeleteBaseDenomResponse);
+}
+message MsgCreateBaseDenom {
+  string creator = 1;
+  string denom   = 3;
+}
+
+message MsgCreateBaseDenomResponse {}
+
+message MsgUpdateBaseDenom {
+  string creator = 1;
+  string denom   = 3;
+}
+
+message MsgUpdateBaseDenomResponse {}
+
+message MsgDeleteBaseDenom {
+  string creator = 1;
+}
+
+message MsgDeleteBaseDenomResponse {}
+
