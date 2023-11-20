@@ -18,8 +18,8 @@ func (k msgServer) CreateBaseDenom(goCtx context.Context, msg *types.MsgCreateBa
 	}
 
 	var baseDenom = types.BaseDenom{
+    	Denom:   sdk.Coin{Denom: "stake", Amount: sdk.NewInt(1)}, // Giả sử số lượng là 1
 		Creator: msg.Creator,
-		Denom:   msg.Denom,
 	}
 
 	k.SetBaseDenom(
@@ -33,7 +33,7 @@ func (k msgServer) UpdateBaseDenom(goCtx context.Context, msg *types.MsgUpdateBa
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Check if the value exists
-	valFound, isFound := k.GetBaseDenom(ctx)
+		valFound, isFound := k.GetBaseDenom(ctx)
 	if !isFound {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, "not set")
 	}
@@ -44,8 +44,8 @@ func (k msgServer) UpdateBaseDenom(goCtx context.Context, msg *types.MsgUpdateBa
 	}
 
 	var baseDenom = types.BaseDenom{
+    	Denom:   sdk.Coin{Denom: "stake", Amount: sdk.NewInt(1)}, // Giả sử số lượng là 1
 		Creator: msg.Creator,
-		Denom:   msg.Denom,
 	}
 
 	k.SetBaseDenom(ctx, baseDenom)

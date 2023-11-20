@@ -9,8 +9,11 @@ import (
 // InitGenesis initializes the module's state from a provided genesis state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
 	// Set if defined
+	var baseDenom = types.BaseDenom{
+    	Denom:   sdk.Coin{Denom: "stake", Amount: sdk.NewInt(1)}, // Giả sử số lượng là 1
+	}
 	if genState.BaseDenom != nil {
-		k.SetBaseDenom(ctx, *genState.BaseDenom)
+		k.SetBaseDenom(ctx, baseDenom)
 	}
 	// this line is used by starport scaffolding # genesis/module/init
 	k.SetParams(ctx, genState.Params)

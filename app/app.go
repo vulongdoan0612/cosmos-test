@@ -712,12 +712,13 @@ func New(
 
 	// initialize BaseApp
 	anteHandler, err := vutest.NewAnteHandler_VuChain(
-		ante.HandlerOptions{
+		vutest.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
 			SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 			FeegrantKeeper:  app.FeeGrantKeeper,
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
+			TxFeeChecker:    app.VutestKeeper,
 		},
 	)
 	if err != nil {

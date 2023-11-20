@@ -8,6 +8,7 @@ import (
 	"vutest/testutil/nullify"
 	"vutest/x/vutest"
 	"vutest/x/vutest/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestGenesis(t *testing.T) {
@@ -15,7 +16,7 @@ func TestGenesis(t *testing.T) {
 		Params: types.DefaultParams(),
 
 		BaseDenom: &types.BaseDenom{
-			Denom: "30",
+    	Denom:   sdk.Coin{Denom: "stake", Amount: sdk.NewInt(1)}, // Giả sử số lượng là 1
 		},
 		// this line is used by starport scaffolding # genesis/test/state
 	}

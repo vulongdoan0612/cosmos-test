@@ -2,6 +2,7 @@ package types_test
 
 import (
 	"testing"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/stretchr/testify/require"
 	"vutest/x/vutest/types"
@@ -23,7 +24,7 @@ func TestGenesisState_Validate(t *testing.T) {
 			genState: &types.GenesisState{
 
 				BaseDenom: &types.BaseDenom{
-					Denom: "91",
+    			Denom:   sdk.Coin{Denom: "stake", Amount: sdk.NewInt(1)}, // Giả sử số lượng là 1
 				},
 				// this line is used by starport scaffolding # types/genesis/validField
 			},

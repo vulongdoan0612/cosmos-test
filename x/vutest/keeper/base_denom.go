@@ -1,9 +1,9 @@
 package keeper
 
 import (
+	"vutest/x/vutest/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"vutest/x/vutest/types"
 )
 
 // SetBaseDenom set baseDenom in the store
