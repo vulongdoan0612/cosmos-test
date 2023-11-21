@@ -17,10 +17,10 @@ func (k msgServer) CreateBaseDenom(goCtx context.Context, msg *types.MsgCreateBa
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "already set")
 	}
 
-	var baseDenom = types.BaseDenom{
-    	Denom:   sdk.Coin{Denom: "stake", Amount: sdk.NewInt(1)}, // Giả sử số lượng là 1
-		Creator: msg.Creator,
+var baseDenom = types.BaseDenom{
+    Denom:   sdk.Coin{Denom: msg.Denom}, // Giả sử số lượng là 1
 	}
+
 
 	k.SetBaseDenom(
 		ctx,
@@ -44,8 +44,7 @@ func (k msgServer) UpdateBaseDenom(goCtx context.Context, msg *types.MsgUpdateBa
 	}
 
 	var baseDenom = types.BaseDenom{
-    	Denom:   sdk.Coin{Denom: "stake", Amount: sdk.NewInt(1)}, // Giả sử số lượng là 1
-		Creator: msg.Creator,
+    Denom:   sdk.Coin{Denom: msg.Denom}, // Giả sử số lượng là 1
 	}
 
 	k.SetBaseDenom(ctx, baseDenom)

@@ -16,7 +16,7 @@ func TestGenesis(t *testing.T) {
 		Params: types.DefaultParams(),
 
 		BaseDenom: &types.BaseDenom{
-    	Denom:   sdk.Coin{Denom: "stake", Amount: sdk.NewInt(1)}, // Giả sử số lượng là 1
+			Denom:   sdk.Coin{Denom: "stake"}, // Giả sử số lượng là 1
 		},
 		// this line is used by starport scaffolding # genesis/test/state
 	}
