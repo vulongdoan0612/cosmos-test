@@ -3,13 +3,13 @@ package keeper
 import (
 	"errors"
 	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-
 )
 
 // TxFeeChecker check if the provided fee is enough and returns the effective fee and tx priority,
@@ -32,24 +32,39 @@ func NewDeductFeeDecorator_VuChain_On(ak ante.AccountKeeper, bk types.BankKeeper
 		accountKeeper:  ak,
 		bankKeeper:     bk,
 		feegrantKeeper: fk,
-		txFeesChecker:   tfc,
+		txFeesChecker:  tfc,
 	}
 }
 
 func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	feeTx, ok := tx.(sdk.FeeTx)
+
 	if !ok {
 		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
 	}
-									
+	baseDenom, found := dfd.txFeesChecker.GetBaseDenom(ctx)
+
+	if !found {
+		fmt.Print("base denom not found")
+	}
+	if baseDenom.GetDenom().Denom == "0" {
+
+	}
+
 	// if !simulate && ctx.BlockHeight() > 0 && feeTx.GetGas() == 0 {
 	// 	return ctx, sdkerrors.Wrap(sdkerrors.ErrInvalidGasLimit, "must provide positive gas")
 	// }
 
+	// fmt.Print(feeTx.GetGas(), "/", simulate, "/", feeTx.GetFee(), "/", feeTx, "/", "YYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYY")
+	cfgMinGasPrice := ctx.MinGasPrices().AmountOf(baseDenom.String())
+	cfgMinGasPrice = sdk.MaxDec(cfgMinGasPrice, dfd.Opts.MinGasPriceForHighGasTx)
+
+	fmt.Print(cfgMinGasPrice, "lDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSD")
 	var (
 		priority int64
 		// err      error
 	)
+	// feeCoins := feeTx.GetFee()
 
 	fee := feeTx.GetFee()
 	// if !simulate {
@@ -58,17 +73,19 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	// 		return ctx, err
 	// 	}
 	// }
-	if err := dfd.checkDeductFee(ctx, tx, fee,dfd.txFeesChecker ); err != nil {
+	if err := dfd.checkDeductFee(ctx, tx, fee, dfd.txFeesChecker); err != nil {
 		return ctx, err
 	}
 
+	reqGas:=feeTx.GetGas()
+	// err :=  dfd.txFeesChecker.IsSufficientFee(ctx, cfgMinGasPrice, feeTx.GetGas(), feeCoins[0])
 	newCtx := ctx.WithPriority(priority)
 
 	return next(newCtx, tx, simulate)
 }
 
 // DeductFees deducts fees from the given account.
-func (dfd DeductFeeDecorator) checkDeductFee(ctx sdk.Context, sdkTx sdk.Tx, fee sdk.Coins,k Keeper) error {
+func (dfd DeductFeeDecorator) checkDeductFee(ctx sdk.Context, sdkTx sdk.Tx, fee sdk.Coins, k Keeper) error {
 	feeTx, ok := sdkTx.(sdk.FeeTx)
 	if !ok {
 		return sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
@@ -82,6 +99,7 @@ func (dfd DeductFeeDecorator) checkDeductFee(ctx sdk.Context, sdkTx sdk.Tx, fee 
 	// }
 
 	feePayer := feeTx.FeePayer()
+	// fmt.Print(feeTx, "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT")
 	feeGranter := feeTx.FeeGranter()
 	deductFeesFrom := feePayer
 
@@ -119,7 +137,26 @@ func (dfd DeductFeeDecorator) checkDeductFee(ctx sdk.Context, sdkTx sdk.Tx, fee 
 			sdk.NewAttribute(sdk.AttributeKeyFeePayer, deductFeesFrom.String()),
 		),
 	}
+
 	ctx.EventManager().EmitEvents(events)
+
+	return nil
+}
+
+func (k Keeper) IsSufficientFee(ctx sdk.Context, minBaseGasPrice int, gasRequested uint64, feeCoin sdk.Coin) error {
+	baseDenom, err := k.GetBaseDenom(ctx)
+	if err {
+
+	}
+	// Determine the required fees by multiplying the required minimum gas
+	// price by the gas limit, where fee = ceil(minGasPrice * gasLimit).
+	minBaseGasPriceDec := sdk.NewDec(int64(minBaseGasPrice))
+	gasRequestedDec := sdk.NewDec(int64(gasRequested))
+	requiredFeeDec := minBaseGasPriceDec.Mul(gasRequestedDec)
+	requiredBaseFee := sdk.NewCoin(baseDenom.String(), requiredFeeDec.Ceil().RoundInt())
+
+	// check to ensure that the convertedFee should always be greater than or equal to the requireBaseFee
+	errorsmod.Wrapf(sdkerrors.ErrInsufficientFee, "insufficient fees; got: %s which converts to NONE. required: %s", feeCoin, requiredBaseFee)
 
 	return nil
 }
@@ -130,20 +167,20 @@ func DeductFees(txFeeKeeper Keeper, bankKeeper types.BankKeeper, ctx sdk.Context
 	if !fees.IsValid() {
 		return sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee, "invalid fee amount: %s", fees)
 	}
-	baseDenom,found := txFeeKeeper.GetBaseDenom(ctx)
-	fmt.Print(fees[0].Denom,"/",baseDenom.GetDenom().Denom,"/",baseDenom.GetDenom(),"/",baseDenom.String(),"DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
+	baseDenom, found := txFeeKeeper.GetBaseDenom(ctx)
+
 	if !found {
-	return errors.New("base denom not found")
+		return errors.New("base denom not found")
 	}
 	// checks if input fee is uOSMO (assumes only one fee token exists in the fees array (as per the check in mempoolFeeDecorator))
-	if fees[0].Denom == baseDenom.GetDenom().Denom{
-		fmt.Print("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
+	if fees[0].Denom == baseDenom.GetDenom().Denom {
+
 		// sends to FeeCollectorName module account, which sends to staking rewards
 		err := bankKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), types.FeeCollectorName, fees)
 		if err != nil {
 			return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, err.Error())
 		}
-	} 
+	}
 
 	return nil
 }
