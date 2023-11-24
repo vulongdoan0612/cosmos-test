@@ -42,43 +42,31 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	if !ok {
 		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
 	}
-	baseDenom, found := dfd.txFeesChecker.GetBaseDenom(ctx)
 
-	if !found {
-		fmt.Print("base denom not found")
-	}
-	if baseDenom.GetDenom().Denom == "0" {
-
-	}
-
-	// if !simulate && ctx.BlockHeight() > 0 && feeTx.GetGas() == 0 {
-	// 	return ctx, sdkerrors.Wrap(sdkerrors.ErrInvalidGasLimit, "must provide positive gas")
-	// }
-
-	// fmt.Print(feeTx.GetGas(), "/", simulate, "/", feeTx.GetFee(), "/", feeTx, "/", "YYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYYYTYYYYYYYYYYYYYYYYYYYYYYYY")
-	cfgMinGasPrice := ctx.MinGasPrices().AmountOf(baseDenom.String())
-	cfgMinGasPrice = sdk.MaxDec(cfgMinGasPrice, dfd.Opts.MinGasPriceForHighGasTx)
-
-	fmt.Print(cfgMinGasPrice, "lDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSDlDSDSDSD")
 	var (
 		priority int64
 		// err      error
 	)
 	// feeCoins := feeTx.GetFee()
 
+	baseDenom, found := dfd.txFeesChecker.GetBaseDenom(ctx)
+	if !found {
+
+		fmt.Print("ds")
+	}
 	fee := feeTx.GetFee()
-	// if !simulate {
-	// 	fee, priority, err = dfd.txFeeChecker(ctx, tx)
-	// 	if err != nil {
-	// 		return ctx, err
-	// 	}
-	// }
+	reqGas := feeTx.GetGas()
+	minGasPriceInBaseDenom := fee.AmountOf(baseDenom.Denom.Denom).Uint64()
+	minGasFee := reqGas * minGasPriceInBaseDenom
+	fmt.Print(minGasFee,"/",feeTx.GetGas(),"/","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
+	if minGasFee < feeTx.GetGas() {
+		fmt.Print("Success")
+	}
+
 	if err := dfd.checkDeductFee(ctx, tx, fee, dfd.txFeesChecker); err != nil {
 		return ctx, err
 	}
-
-	reqGas:=feeTx.GetGas()
-	// err :=  dfd.txFeesChecker.IsSufficientFee(ctx, cfgMinGasPrice, feeTx.GetGas(), feeCoins[0])
 	newCtx := ctx.WithPriority(priority)
 
 	return next(newCtx, tx, simulate)
@@ -99,7 +87,6 @@ func (dfd DeductFeeDecorator) checkDeductFee(ctx sdk.Context, sdkTx sdk.Tx, fee 
 	// }
 
 	feePayer := feeTx.FeePayer()
-	// fmt.Print(feeTx, "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT")
 	feeGranter := feeTx.FeeGranter()
 	deductFeesFrom := feePayer
 
@@ -114,7 +101,7 @@ func (dfd DeductFeeDecorator) checkDeductFee(ctx sdk.Context, sdkTx sdk.Tx, fee 
 				return sdkerrors.Wrapf(err, "%s does not allow to pay fees for %s", feeGranter, feePayer)
 			}
 		}
-
+		
 		deductFeesFrom = feeGranter
 	}
 	deductFeesFromAcc := dfd.accountKeeper.GetAccount(ctx, deductFeesFrom)
