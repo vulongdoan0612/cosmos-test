@@ -56,11 +56,15 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	}
 	fee := feeTx.GetFee()
 	reqGas := feeTx.GetGas()
-	minGasPriceInBaseDenom := fee.AmountOf(baseDenom.Denom.Denom).Uint64()
-	minGasFee := reqGas * minGasPriceInBaseDenom
-	fmt.Print(minGasFee,"/",feeTx.GetGas(),"/","AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	reqGasInt := sdk.NewInt(int64(reqGas))                 
+	minGasFee := reqGasInt.Mul(baseDenom.GetDenom().Amount) 
 
-	if minGasFee < feeTx.GetGas() {
+	feeAmount := fee.AmountOf("stake").Uint64() 
+	fmt.Print(minGasFee, "/", feeTx.GetGas(), "/", feeAmount, "/", reqGas, "/",  baseDenom.GetDenom().Amount, "/")
+
+	feeAmountInt := sdk.NewInt(int64(feeAmount))
+
+	if minGasFee.LT(feeAmountInt) { 
 		fmt.Print("Success")
 	}
 
@@ -101,7 +105,7 @@ func (dfd DeductFeeDecorator) checkDeductFee(ctx sdk.Context, sdkTx sdk.Tx, fee 
 				return sdkerrors.Wrapf(err, "%s does not allow to pay fees for %s", feeGranter, feePayer)
 			}
 		}
-		
+
 		deductFeesFrom = feeGranter
 	}
 	deductFeesFromAcc := dfd.accountKeeper.GetAccount(ctx, deductFeesFrom)
