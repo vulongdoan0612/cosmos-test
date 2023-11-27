@@ -56,16 +56,15 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	}
 	fee := feeTx.GetFee()
 	reqGas := feeTx.GetGas()
-	reqGasInt := sdk.NewInt(int64(reqGas))                 
-	minGasFee := reqGasInt.Mul(baseDenom.GetDenom().Amount) 
+	reqGasInt := sdk.NewInt(int64(reqGas))
+	minGasFee := reqGasInt.Mul(baseDenom.GetDenom().Amount)
 
-	feeAmount := fee.AmountOf("stake").Uint64() 
-	fmt.Print(minGasFee, "/", feeTx.GetGas(), "/", feeAmount, "/", reqGas, "/",  baseDenom.GetDenom().Amount, "/")
+	feeAmount := fee.AmountOf("stake").Uint64()
 
 	feeAmountInt := sdk.NewInt(int64(feeAmount))
 
-	if minGasFee.LT(feeAmountInt) { 
-		fmt.Print("Success")
+	if minGasFee.LT(feeAmountInt) {
+		fmt.Print("SucessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssSussssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssSussssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssSussssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssSussssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssSussssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" ,"minGasFee:", minGasFee, "/", "feeTx.GetGas():", feeTx.GetGas(), "/", "feeAmount:", feeAmount, "/", "reqGas:", reqGas, "/", "baseDenom:", baseDenom.GetDenom().Amount)
 	}
 
 	if err := dfd.checkDeductFee(ctx, tx, fee, dfd.txFeesChecker); err != nil {
