@@ -64,7 +64,7 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	feeAmountInt := sdk.NewInt(int64(feeAmount))
 
 	if minGasFee.LT(feeAmountInt) {
-		fmt.Print("SucessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssSussssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssSussssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssSussssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssSussssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssSussssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss" ,"minGasFee:", minGasFee, "/", "feeTx.GetGas():", feeTx.GetGas(), "/", "feeAmount:", feeAmount, "/", "reqGas:", reqGas, "/", "baseDenom:", baseDenom.GetDenom().Amount)
+		fmt.Print("  " ,"minGasFee:", minGasFee, "/", "feeTx.GetGas():", feeTx.GetGas(), "/", "feeAmount:", feeAmount, "/", "reqGas:", reqGas, "/", "baseDenom:", baseDenom.GetDenom().Amount)
 	}
 
 	if err := dfd.checkDeductFee(ctx, tx, fee, dfd.txFeesChecker); err != nil {
