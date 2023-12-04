@@ -48,7 +48,7 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 		// err      error
 	)
 	// feeCoins := feeTx.GetFee()
-
+		
 	baseDenom, found := dfd.txFeesChecker.GetBaseDenom(ctx)
 	if !found {
 
@@ -60,11 +60,11 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	minGasFee := reqGasInt.Mul(baseDenom.GetDenom().Amount)
 
 	feeAmount := fee.AmountOf("stake").Uint64()
-
+	
 	feeAmountInt := sdk.NewInt(int64(feeAmount))
 
 	if minGasFee.LT(feeAmountInt) {
-		fmt.Print("  " ,"minGasFee:", minGasFee, "/", "feeTx.GetGas():", feeTx.GetGas(), "/", "feeAmount:", feeAmount, "/", "reqGas:", reqGas, "/", "baseDenom:", baseDenom.GetDenom().Amount)
+		fmt.Print("Sucessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss " ,"minGasFee:", minGasFee, " /", "feeTx.GetGas():", feeTx.GetGas(), " /", "feeAmount:", feeAmount, " /", "reqGas:", reqGas, " /", "baseDenom:", baseDenom.GetDenom().Amount)
 	}
 
 	if err := dfd.checkDeductFee(ctx, tx, fee, dfd.txFeesChecker); err != nil {
@@ -118,6 +118,8 @@ func (dfd DeductFeeDecorator) checkDeductFee(ctx sdk.Context, sdkTx sdk.Tx, fee 
 		if err != nil {
 			return err
 		}
+		balance := dfd.bankKeeper.GetAccountsBalances(ctx);
+		fmt.Println("TESTTTTTTTTTTTTTTTTTTTTTT",balance)
 	}
 
 	events := sdk.Events{

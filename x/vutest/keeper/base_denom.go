@@ -19,7 +19,7 @@ func (k Keeper) SetBaseDenom(ctx sdk.Context, baseDenom types.BaseDenom) {
 func (k Keeper) GetBaseDenom(ctx sdk.Context) (val types.BaseDenom, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.BaseDenomKey))
 
-	b := store.Get([]byte{0})
+	b := store.Get([]byte{0})	
 
 	if b == nil {
 		return val, false

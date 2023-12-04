@@ -109,6 +109,7 @@ import (
 	"os"
 	"path/filepath"
 	vutest "vutest/app/ante"
+	banktypetest "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	vutestmodule "vutest/x/vutest"
 	vutestmodulekeeper "vutest/x/vutest/keeper"
@@ -714,7 +715,7 @@ func New(
 	anteHandler, err := vutest.NewAnteHandler_VuChain(
 		vutest.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
-			BankKeeper:      app.BankKeeper,
+			BankKeeper:      banktypetest.BankKeeper,
 			SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 			FeegrantKeeper:  app.FeeGrantKeeper,
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
