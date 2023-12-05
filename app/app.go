@@ -1,10 +1,15 @@
 package app
 
 import (
-	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	vutest "vutest/app/ante"
+
+	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
@@ -105,15 +110,11 @@ import (
 	solomachine "github.com/cosmos/ibc-go/v7/modules/light-clients/06-solomachine"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	"github.com/spf13/cast"
-	"io"
-	"os"
-	"path/filepath"
-	vutest "vutest/app/ante"
-	banktypetest "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	vutestmodule "vutest/x/vutest"
 	vutestmodulekeeper "vutest/x/vutest/keeper"
 	vutestmoduletypes "vutest/x/vutest/types"
+
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	appparams "vutest/app/params"
@@ -715,7 +716,7 @@ func New(
 	anteHandler, err := vutest.NewAnteHandler_VuChain(
 		vutest.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
-			BankKeeper:      banktypetest.BankKeeper,
+			BankKeeper:      app.BankKeeper,
 			SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
 			FeegrantKeeper:  app.FeeGrantKeeper,
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,

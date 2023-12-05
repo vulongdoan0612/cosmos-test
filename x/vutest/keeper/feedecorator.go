@@ -10,6 +10,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 // TxFeeChecker check if the provided fee is enough and returns the effective fee and tx priority,
@@ -20,14 +21,19 @@ import (
 // Call next AnteHandler if fees successfully deducted
 // CONTRACT: Tx must implement FeeTx interface to use DeductFeeDecorator
 
+type BankKeeper interface {
+	types.BankKeeper
+	GetAccountsBalances(ctx sdk.Context) []banktypes.Balance
+}
+
 type DeductFeeDecorator struct {
 	accountKeeper  ante.AccountKeeper
-	bankKeeper     types.BankKeeper
+	bankKeeper     BankKeeper
 	feegrantKeeper ante.FeegrantKeeper
 	txFeesChecker  Keeper
 }
 
-func NewDeductFeeDecorator_VuChain_On(ak ante.AccountKeeper, bk types.BankKeeper, fk ante.FeegrantKeeper, tfc Keeper) DeductFeeDecorator {
+func NewDeductFeeDecorator_VuChain_On(ak ante.AccountKeeper, bk BankKeeper, fk ante.FeegrantKeeper, tfc Keeper) DeductFeeDecorator {
 	return DeductFeeDecorator{
 		accountKeeper:  ak,
 		bankKeeper:     bk,
@@ -48,7 +54,7 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 		// err      error
 	)
 	// feeCoins := feeTx.GetFee()
-		
+
 	baseDenom, found := dfd.txFeesChecker.GetBaseDenom(ctx)
 	if !found {
 
@@ -60,11 +66,11 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	minGasFee := reqGasInt.Mul(baseDenom.GetDenom().Amount)
 
 	feeAmount := fee.AmountOf("stake").Uint64()
-	
+
 	feeAmountInt := sdk.NewInt(int64(feeAmount))
 
 	if minGasFee.LT(feeAmountInt) {
-		fmt.Print("Sucessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss " ,"minGasFee:", minGasFee, " /", "feeTx.GetGas():", feeTx.GetGas(), " /", "feeAmount:", feeAmount, " /", "reqGas:", reqGas, " /", "baseDenom:", baseDenom.GetDenom().Amount)
+		fmt.Print("Sucessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss ", "minGasFee:", minGasFee, " /", "feeTx.GetGas():", feeTx.GetGas(), " /", "feeAmount:", feeAmount, " /", "reqGas:", reqGas, " /", "baseDenom:", baseDenom.GetDenom().Amount)
 	}
 
 	if err := dfd.checkDeductFee(ctx, tx, fee, dfd.txFeesChecker); err != nil {
@@ -118,8 +124,8 @@ func (dfd DeductFeeDecorator) checkDeductFee(ctx sdk.Context, sdkTx sdk.Tx, fee 
 		if err != nil {
 			return err
 		}
-		balance := dfd.bankKeeper.GetAccountsBalances(ctx);
-		fmt.Println("TESTTTTTTTTTTTTTTTTTTTTTT",balance)
+		balance := dfd.bankKeeper.GetAccountsBalances(ctx)
+		fmt.Println("TESTTTTTTTTTTTTTTTTTTTTTT", balance)
 	}
 
 	events := sdk.Events{
